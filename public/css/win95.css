@@ -1,0 +1,295 @@
+/* ============================================================
+   WIN95.CSS — hand-rolled Windows 95 system chrome
+   Blitz Leaderboard 95. No dependencies. Best viewed in 800x600.
+   ============================================================ */
+
+:root {
+  --w95-face: #c0c0c0;
+  --w95-face-light: #dfdfdf;
+  --w95-hl: #ffffff;
+  --w95-shadow: #808080;
+  --w95-dark: #0a0a0a;
+  --w95-navy: #000080;
+  --w95-blue: #1084d0;
+  --w95-desktop: #008080;
+  --w95-text: #000000;
+  --w95-disabled: #808080;
+  --font-comic: "Comic Sans MS", "Chalkboard SE", casual, "Comic Neue", "Comic Relief", cursive;
+
+  /* bevels as reusable shadows */
+  --bevel-out: inset -1px -1px var(--w95-dark), inset 1px 1px var(--w95-hl),
+               inset -2px -2px var(--w95-shadow), inset 2px 2px var(--w95-face-light);
+  --bevel-in:  inset -1px -1px var(--w95-hl), inset 1px 1px var(--w95-dark),
+               inset -2px -2px var(--w95-face-light), inset 2px 2px var(--w95-shadow);
+  --bevel-field: inset -1px -1px var(--w95-face-light), inset 1px 1px var(--w95-shadow),
+                 inset -2px -2px var(--w95-hl), inset 2px 2px var(--w95-dark);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--w95-desktop);
+  font-family: var(--font-comic);
+  font-size: 14px;
+  color: var(--w95-text);
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ---------- Windows ---------- */
+
+.win95-window {
+  background: var(--w95-face);
+  box-shadow: var(--bevel-out), 4px 4px 0 rgba(0, 0, 0, 0.35);
+  padding: 3px;
+  margin: 0 0 18px;
+}
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  background: linear-gradient(90deg, var(--w95-navy), var(--w95-blue));
+  color: #fff;
+  padding: 3px 4px 3px 7px;
+  font-weight: bold;
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+
+.titlebar .titlebar-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+.titlebar.inactive {
+  background: linear-gradient(90deg, #808080, #b5b5b5);
+}
+
+.titlebar-controls {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.titlebar-controls button {
+  width: 22px;
+  height: 20px;
+  padding: 0;
+  font-family: "Marlett", monospace;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.win95-body {
+  padding: 12px;
+  overflow-wrap: anywhere;
+}
+
+.win95-window.collapsed .win95-body,
+.win95-window.collapsed .statusbar { display: none; }
+
+/* ---------- Buttons ---------- */
+
+button, .w95-btn {
+  font-family: var(--font-comic);
+  font-size: 14px;
+  color: var(--w95-text);
+  background: var(--w95-face);
+  border: none;
+  box-shadow: var(--bevel-out);
+  padding: 6px 14px;
+  min-height: 34px; /* fat fingers, tiny racquets */
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+button:active, .w95-btn:active,
+button.pressed, .w95-btn.pressed {
+  box-shadow: var(--bevel-in);
+  padding-top: 7px;
+  padding-bottom: 5px;
+}
+
+button:focus-visible, .w95-btn:focus-visible {
+  outline: 1px dotted #000;
+  outline-offset: -5px;
+}
+
+button:disabled {
+  color: var(--w95-disabled);
+  text-shadow: 1px 1px 0 var(--w95-hl);
+  cursor: not-allowed;
+}
+
+button.danger { color: #a00000; }
+button.primary { font-weight: bold; }
+
+/* ---------- Form fields ---------- */
+
+input[type="text"], input[type="number"], input[type="date"],
+input[type="password"], select, textarea {
+  font-family: var(--font-comic);
+  font-size: 16px; /* stops iOS zoom-on-focus */
+  background: #fff;
+  color: #000;
+  border: none;
+  box-shadow: var(--bevel-field);
+  padding: 7px 8px;
+  min-height: 36px;
+  max-width: 100%;
+}
+
+input:focus, select:focus, textarea:focus { outline: 1px dotted var(--w95-navy); outline-offset: -4px; }
+
+label { display: block; margin: 8px 0 3px; font-weight: bold; }
+
+fieldset {
+  border: none;
+  box-shadow: inset -1px -1px var(--w95-hl), inset 1px 1px var(--w95-shadow),
+              -1px -1px var(--w95-shadow), 1px 1px var(--w95-hl);
+  padding: 10px;
+  margin: 10px 0;
+}
+
+legend { font-weight: bold; padding: 0 6px; }
+
+/* ---------- Tables ---------- */
+
+.w95-table-wrap {
+  background: #fff;
+  box-shadow: var(--bevel-field);
+  padding: 3px;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th {
+  background: var(--w95-face);
+  box-shadow: var(--bevel-out);
+  padding: 6px 8px;
+  text-align: left;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+td {
+  padding: 8px;
+  border-bottom: 1px dotted #b0b0b0;
+  vertical-align: middle;
+}
+
+tr:last-child td { border-bottom: none; }
+
+/* ---------- Misc chrome ---------- */
+
+.statusbar {
+  display: flex;
+  gap: 4px;
+  margin-top: 3px;
+  font-size: 12px;
+}
+
+.statusbar > span {
+  box-shadow: inset -1px -1px var(--w95-hl), inset 1px 1px var(--w95-shadow);
+  padding: 3px 8px;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+hr.w95 {
+  border: none;
+  border-top: 1px solid var(--w95-shadow);
+  border-bottom: 1px solid var(--w95-hl);
+  margin: 12px 0;
+}
+
+.sunken {
+  box-shadow: var(--bevel-field);
+  background: #fff;
+  padding: 8px;
+}
+
+/* Win95 scrollbars (WebKit) */
+::-webkit-scrollbar { width: 16px; height: 16px; }
+::-webkit-scrollbar-track {
+  background-image: repeating-conic-gradient(#fff 0% 25%, var(--w95-face) 0% 50%);
+  background-size: 4px 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--w95-face);
+  box-shadow: var(--bevel-out);
+}
+::-webkit-scrollbar-button {
+  background: var(--w95-face);
+  box-shadow: var(--bevel-out);
+  height: 16px;
+  width: 16px;
+}
+
+/* ---------- Dialogs ---------- */
+
+.w95-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.w95-dialog {
+  background: var(--w95-face);
+  box-shadow: var(--bevel-out), 6px 6px 0 rgba(0, 0, 0, 0.4);
+  padding: 3px;
+  width: min(420px, 92vw);
+  animation: dialog-pop 0.12s steps(2) both;
+}
+
+@keyframes dialog-pop {
+  from { transform: scale(0.85); }
+  to   { transform: scale(1); }
+}
+
+.w95-dialog .dialog-body {
+  display: flex;
+  gap: 14px;
+  padding: 16px 14px;
+  align-items: flex-start;
+}
+
+.w95-dialog .dialog-icon { font-size: 34px; line-height: 1; flex-shrink: 0; }
+
+.w95-dialog .dialog-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 0 12px 14px;
+}
+
+.w95-dialog .dialog-buttons button { min-width: 92px; }
