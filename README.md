@@ -59,6 +59,28 @@ npx wrangler pages dev     # → http://localhost:8788
 
 Bookmark your admin panel: **https://blitz-leaderboard.pages.dev/admin.html?key=YOUR_KEY**
 
+## Preview hosting (CI/CD)
+
+Deployments run automatically via GitHub Actions (`.github/workflows/deploy.yml`):
+
+- **Pull requests** publish a live **preview deployment** to a branch-scoped
+  `*.blitz-leaderboard.pages.dev` URL — review changes on real Cloudflare
+  infrastructure before merging. The preview URL appears in the run's summary
+  and on the PR's deployment status.
+- **Pushes to `main`** publish the **production deployment**.
+
+One-time setup — add these repository secrets under
+**Settings → Secrets and variables → Actions**:
+
+| Secret | Value |
+| --- | --- |
+| `CLOUDFLARE_API_TOKEN` | A token with the **Cloudflare Pages: Edit** permission |
+| `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID |
+
+The Pages project (`blitz-leaderboard`) and its D1 binding must already exist
+(see **Deploy** above). Preview deployments share the same D1 database as
+production, so treat preview data as real.
+
 ## How it works
 
 - **Public leaderboard:** Everyone sees the current session and all-time rankings—read-only, no login.
