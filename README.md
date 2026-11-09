@@ -66,3 +66,15 @@ Bookmark your admin panel: **https://blitz-leaderboard.pages.dev/admin.html?key=
 - **Games:** Recorded for stats and glory. Doubles or singles. Winners logged but scoring is flexible.
 - **Points:** Freeform per player per session. Rules change every meetup. The admin edits everything—add sessions, log games, award points—via the hidden admin URL.
 - **Privacy:** Admin key protects the edit panel. Game results are public.
+
+## Blitz Scoreboard 95 (live tournament scoreboard)
+
+`scoreboard/blitz-scoreboard.html` is a single-file spin-off for tournament days: add players, tap **+** / **-** next to their names, and everyone with the link sees the same scores live. Same Win95 chrome, WordArt, ticker and Blitzy as the leaderboard, no Cloudflare deploy needed.
+
+It runs as a claude.ai Artifact and syncs through the Artifact's shared database:
+
+- `players/<id>` - `{name, emoji, createdAt}`
+- `board/meta` - `{epoch}`; "Reset all scores" bumps the epoch so old tallies stop counting
+- `tallies/<viewerId>` - `{epoch, scores: {playerId: n}}`; each viewer only writes their own tally (enforced by access rules), so simultaneous taps from different phones never overwrite each other. A player's score is the sum of all current-epoch tallies.
+
+To let friends change scores, share the Artifact and give them **Contributor** access. Viewers below that see live scores read-only.
