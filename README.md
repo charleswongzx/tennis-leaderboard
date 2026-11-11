@@ -55,7 +55,7 @@ npx wrangler d1 execute tennis-leaderboard --local --file=seed.sql   # optional 
 
 ## Going live
 
-The repo is connected to **Cloudflare Workers Builds** as the Worker `tennis-leaderboard`:
+The repo is connected to **Cloudflare Workers Builds** as the Worker `tennis-leaderboard`. In the dashboard, **Settings → Build → Branch control** must have `main` as the production branch:
 
 - Every push builds automatically.
 - `main` deploys to production at `https://tennis-leaderboard.<your-subdomain>.workers.dev`.
