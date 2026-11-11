@@ -1,6 +1,7 @@
 /* ============================================================
-   CHAOS.JS — shared Blitz 95 behaviors.
-   Taskbar, ticker, dialogs, mascot, sparkles, bleeps.
+   CHAOS.JS - shared Weembledon '95 behaviors.
+   Taskbar (with umpire login), header, ticker, dialogs, mascot,
+   sparkles, bleeps.
    ============================================================ */
 window.Blitz = window.Blitz || { pages: {} };
 
@@ -126,9 +127,70 @@ window.Blitz = window.Blitz || { pages: {} };
     });
   }
 
+  /* prompt() but make it Win95. Resolves with the typed string, or null on cancel. */
+  function prompt95(bodyHtml, opts) {
+    opts = opts || {};
+    return new Promise(function (resolve) {
+      var answer = null;
+      var id = 'p95-' + Math.random().toString(36).slice(2);
+      var dlg = showDialog({
+        title: opts.title || 'Input required',
+        icon: opts.icon || '✏️',
+        body: '<form id="' + id + '-f" autocomplete="off"><label for="' + id + '" style="margin-top:0">' + bodyHtml + '</label>' +
+          '<input id="' + id + '" type="' + (opts.type || 'text') + '" value="' + esc(opts.value || '') + '"' +
+          (opts.maxlength ? ' maxlength="' + opts.maxlength + '"' : '') +
+          (opts.placeholder ? ' placeholder="' + esc(opts.placeholder) + '"' : '') +
+          ' style="width:100%"></form>',
+        buttons: [
+          { label: opts.yes || 'OK', primary: true, onClick: function () { answer = document.getElementById(id).value; } },
+          { label: opts.no || 'Cancel' }
+        ],
+        onClose: function () { resolve(answer); }
+      });
+      var input = document.getElementById(id);
+      input.focus();
+      input.select();
+      document.getElementById(id + '-f').addEventListener('submit', function (e) {
+        e.preventDefault();
+        answer = input.value;
+        dlg.close();
+      });
+    });
+  }
+
+  /* Ask for the umpire password. Resolves true when logged in. */
+  async function loginDialog() {
+    var tries = 0;
+    while (tries < 3) {
+      var pw = await prompt95('Umpires only. Enter the password to edit scores and start events:', {
+        title: 'UMPIRE_LOGIN.EXE', icon: '🔐', type: 'password', yes: 'Take the chair', no: 'Just watching'
+      });
+      if (pw === null) return false;
+      try {
+        await B.login(pw);
+        bleep('tada');
+        if (B.mascotSay) B.mascotSay('welcome to the umpire chair. please do not overrule the line judges for fun.');
+        return true;
+      } catch (e) {
+        tries++;
+        bleep('error');
+        if (e.status !== 401) {
+          showDialog({ title: 'UMPIRE_LOGIN.EXE', icon: '❌', body: 'Could not log in: <b>' + esc(e.message) + '</b>' });
+          return false;
+        }
+        if (tries >= 3) {
+          showDialog({ title: 'Hawk-Eye says no', icon: '🦅', body: 'Three challenges used, all overturned. That password is <b>out</b>.' });
+          return false;
+        }
+      }
+    }
+    return false;
+  }
+
   var CLOSE_JOKES = [
-    'blitz.exe has performed an <b>illegal ace</b> and cannot be shut down.',
-    'This window is load-bearing. Removing it would crash the leaderboard, the site, and possibly your racquet.',
+    'weembledon.exe has performed an <b>illegal ace</b> and cannot be shut down.',
+    'This window is load-bearing. Removing it would crash the Championships, the site, and possibly your racquet.',
+    'Quiet please. Windows may not be closed during a point.',
     'Error 0x0040LOVE: close request denied. The rally must continue.',
     'You can check out any time you like, but this window can never leave.',
     'Task failed successfully! The window remains open out of spite.'
@@ -136,35 +198,46 @@ window.Blitz = window.Blitz || { pages: {} };
 
   /* ---------- chrome: taskbar, header, ticker, footer ---------- */
 
-  var NAV = [
-    { id: 'index', label: '🏆 Leaderboard', href: 'index.html' },
-    { id: 'sessions', label: '📅 Sessions', href: 'sessions.html' }
-  ];
-
   function buildChrome(active, opts) {
     opts = opts || {};
     var desktop = document.querySelector('.desktop');
     if (!desktop) return;
-
-    var navItems = NAV.slice();
-    if (opts.showAdminTab) navItems.push({ id: 'admin', label: '🔧 Control Panel', href: 'admin.html' });
 
     var bar = el('<nav class="taskbar" aria-label="Taskbar"></nav>');
     var start = el('<button class="w95-btn start" type="button">🎾 Start</button>');
     start.addEventListener('click', function () {
       showDialog({
         title: 'Start Menu',
-        icon: '🎾',
-        body: 'Programs:<br>📁 <b>tennis.exe</b> — go outside and play tennis<br>📁 <b>excuses.dll</b> — currently in use by everyone below rank 3<br>📁 <b>hydration_reminder.sys</b> — drink water!!',
+        icon: '🍓',
+        body: 'Programs:<br>📁 <b>tennis.exe</b> - go outside and play tennis<br>📁 <b>strawberries_and_cream.exe</b> - mandatory between sets<br>📁 <b>excuses.dll</b> - currently in use by everyone below rank 3<br>📁 <b>hydration_reminder.sys</b> - drink water!!',
         buttons: [{ label: 'Cool' }]
       });
     });
     bar.appendChild(start);
-    navItems.forEach(function (n) {
-      var a = el('<a class="w95-btn' + (n.id === active ? ' active' : '') + '" data-nav="' + n.id + '" href="' + n.href + '">' + n.label + '</a>');
-      bar.appendChild(a);
-    });
+    bar.appendChild(el('<a class="w95-btn' + (active === 'home' ? ' active' : '') + '" href="/">🏠 Centre Court</a>'));
     bar.appendChild(el('<span class="spacer"></span>'));
+
+    var umpBtn = el('<button class="w95-btn umpire-btn" type="button"></button>');
+    function paintUmpire() {
+      var on = B.isUmpire();
+      umpBtn.textContent = on ? '🧑‍⚖️ Umpire' : '🔒 Umpire login';
+      umpBtn.title = on ? 'You can edit. Click to log out.' : 'Log in to edit scores and start events';
+      umpBtn.classList.toggle('active', on);
+      document.body.classList.toggle('is-umpire', on);
+    }
+    umpBtn.addEventListener('click', async function () {
+      if (B.isUmpire()) {
+        var out = await confirm95('Leave the umpire chair on this device? You can still watch everything.', {
+          title: 'Log out', icon: '🧑‍⚖️', yes: 'Log out', no: 'Stay'
+        });
+        if (out) await B.logout();
+      } else {
+        await loginDialog();
+      }
+    });
+    document.addEventListener('blitz:auth', paintUmpire);
+    paintUmpire();
+    bar.appendChild(umpBtn);
 
     var soundBtn = el('<button class="w95-btn" type="button" title="toggle bleeps" aria-label="Toggle sound">' + (soundOn() ? '🔊' : '🔇') + '</button>');
     soundBtn.addEventListener('click', function () {
@@ -175,12 +248,12 @@ window.Blitz = window.Blitz || { pages: {} };
     });
     bar.appendChild(soundBtn);
 
-    var clock = el('<span class="clock">--:--</span>');
+    var clock = el('<span class="clock" title="Official timekeeper: Rolax">⌚ --:--</span>');
     function tick() {
       var d = new Date();
       var h = d.getHours() % 12 || 12;
       var m = String(d.getMinutes()).padStart(2, '0');
-      clock.textContent = h + ':' + m + (d.getHours() >= 12 ? ' PM' : ' AM');
+      clock.textContent = '⌚ ROLAX ' + h + ':' + m + (d.getHours() >= 12 ? ' PM' : ' AM');
     }
     tick();
     setInterval(tick, 20000);
@@ -189,25 +262,26 @@ window.Blitz = window.Blitz || { pages: {} };
 
     var header = el(
       '<header class="wordart-wrap">' +
-        '<h1 class="wordart">🎾 BLITZ LEADERBOARD 95 🎾</h1>' +
-        '<p class="wordart-sub">est. whenever · absolutely no prize money · <span class="blink">'
-          + esc(opts.subtitle || 'now with 100% more Comic Sans') + '</span></p>' +
+        '<p class="crest" aria-hidden="true">🎾 🍓 🎾</p>' +
+        '<h1 class="wordart"><span class="wa-small">ROLAX</span> WEEMBLEDON<br>CHAMPIONSHIPS \'95</h1>' +
+        '<p class="wordart-sub">Powered by <b>Blitz Academy</b> · all-weather lawn simulator · <span class="blink">'
+          + esc(opts.subtitle || 'quiet please') + '</span></p>' +
       '</header>');
     desktop.insertBefore(header, bar.nextSibling);
 
-    var ticker = el('<div class="ticker" aria-hidden="true"><div class="ticker-inner">*** BOOTING BLITZ 95 ... PLEASE WAIT ... ACQUIRING TENNIS ... ***</div></div>');
+    var ticker = el('<div class="ticker" aria-hidden="true"><div class="ticker-inner">*** WELCOME TO THE ROLAX WEEMBLEDON CHAMPIONSHIPS \'95 ... MOWING THE LAWN ... PLEASE WAIT ***</div></div>');
     desktop.insertBefore(ticker, header.nextSibling);
 
     var visitorNo = String(420 + (new Date().getDate() * 7) % 100).padStart(6, '0');
     desktop.appendChild(el(
       '<footer class="retro-footer">' +
-        '<span class="construction"><span>🚧 UNDER CONSTRUCTION SINCE 1997 🚧</span></span>' +
-        'You are visitor <span class="hit-counter">' + visitorNo + '</span> !!<br>' +
-        'Best viewed in 800×600 in Netscape Navigator 3.0 · no cookies were harmed<br>' +
-        '<small>© Blitz Tennis Club · all rights reversed</small>' +
+        '<span class="construction"><span>🍓 STRAWBERRIES &amp; CREAM SERVED SINCE 1995 🍓</span></span>' +
+        'You are spectator <span class="hit-counter">' + visitorNo + '</span> !!<br>' +
+        'Best viewed in 800×600 in Netscape Navigator 3.0 · predominantly white attire required<br>' +
+        '<small>Rolax Weembledon is a Blitz Academy production. Not affiliated with any real watch or real lawn. All rights reversed.</small>' +
       '</footer>'));
 
-    /* titlebar buttons: ✕ = joke error, □ = actually collapses */
+    /* titlebar buttons: ✕ = joke error, ▁ = actually collapses */
     document.addEventListener('click', function (e) {
       var btn = e.target.closest('.titlebar-controls button');
       if (!btn || btn.closest('.w95-dialog')) return;
@@ -233,6 +307,17 @@ window.Blitz = window.Blitz || { pages: {} };
     initMascot();
   }
 
+  /* A Win95 window as an HTML string. */
+  function win(title, bodyHtml, attrs, statusHtml) {
+    return '<section class="win95-window" ' + (attrs || '') + '>' +
+      '<div class="titlebar"><span class="titlebar-text">' + title + '</span>' +
+      '<span class="titlebar-controls"><button type="button" data-action="min" aria-label="Minimize">▁</button>' +
+      '<button type="button" data-action="close" aria-label="Close">✕</button></span></div>' +
+      '<div class="win95-body">' + bodyHtml + '</div>' +
+      (statusHtml ? '<div class="statusbar">' + statusHtml + '</div>' : '') +
+      '</section>';
+  }
+
   function setTicker(messages) {
     var inner = document.querySelector('.ticker-inner');
     if (!inner || !messages || !messages.length) return;
@@ -246,6 +331,9 @@ window.Blitz = window.Blitz || { pages: {} };
 
   var TIPS = [
     'did you know? hitting the ball harder makes it go faster.',
+    'the strawberries are for after the match. put them down.',
+    'predominantly white attire. your socks count. i am watching your socks.',
+    'the grass is not slippery. you are just bad at standing.',
     'pro tip: the ball cannot hurt you if you simply are not there.',
     'a "let" is when the net commits a crime and nobody gets punished.',
     'hydrate!! water is just protein shake for the personality.',
@@ -254,7 +342,7 @@ window.Blitz = window.Blitz || { pages: {} };
     'the sun is a skill issue.',
     'statistically, every ball you don\'t chase was probably out anyway.',
     'doubles is just singles with a witness.',
-    'remember: the leaderboard is forever. the shame is also forever.',
+    'remember: the roll of champions is forever. the shame is also forever.',
     'top spin? bottom spin? i am a ball, everything spins for me.',
     'an ace a day keeps the friendship away.'
   ];
@@ -316,6 +404,10 @@ window.Blitz = window.Blitz || { pages: {} };
 
   /* ---------- exports ---------- */
 
+  var EMOJIS = ['🎾', '🦖', '🐐', '🔥', '🥑', '🐙', '🦄', '🍌', '🐸', '👽', '🤖', '🦀', '🐝', '🌶️', '🧀', '🚀', '🦩', '🐧', '💅', '🥷', '🍓', '🦆', '🐢', '🌵'];
+
+  B.EMOJIS = EMOJIS;
+  B.newId = function (prefix) { return (prefix || 'p') + Math.random().toString(36).slice(2, 8); };
   B.esc = esc;
   B.el = el;
   B.fmtDate = fmtDate;
@@ -323,5 +415,8 @@ window.Blitz = window.Blitz || { pages: {} };
   B.setTicker = setTicker;
   B.showDialog = showDialog;
   B.confirm95 = confirm95;
+  B.prompt95 = prompt95;
+  B.loginDialog = loginDialog;
+  B.win = win;
   B.bleep = bleep;
 })();

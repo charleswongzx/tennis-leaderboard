@@ -2,6 +2,11 @@ name = "blitz-leaderboard"
 compatibility_date = "2026-07-01"
 pages_build_output_dir = "public"
 
+# Umpire password for editing. Visitors can view everything without it.
+# Change it here and redeploy. Changing it logs every device out.
+[vars]
+EDIT_PASSWORD = "Blitzy"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "blitz-leaderboard"

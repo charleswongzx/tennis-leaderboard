@@ -1,41 +1,22 @@
--- Blitz Leaderboard 95 — D1 schema (idempotent)
+-- Rolax Weembledon Championships '95 (powered by Blitz Academy) - D1 schema (idempotent)
+--
+-- One row per event. An event is either a quick scoreboard or a tournament.
+-- The event's players, scores and matches live in the `data` JSON column; the
+-- pages compute schedules and standings from it. `version` gives optimistic
+-- concurrency: a write must quote the version it read, so two umpires editing
+-- at once never silently overwrite each other.
 
-CREATE TABLE IF NOT EXISTS players (
+CREATE TABLE IF NOT EXISTS events (
   id          INTEGER PRIMARY KEY,
-  name        TEXT NOT NULL,
-  emoji       TEXT NOT NULL DEFAULT '🎾',
-  tagline     TEXT,
-  created_at  TEXT NOT NULL DEFAULT (datetime('now')),
-  deleted_at  TEXT
-);
-
-CREATE TABLE IF NOT EXISTS sessions (
-  id          INTEGER PRIMARY KEY,
+  kind        TEXT NOT NULL CHECK (kind IN ('scoreboard', 'tournament')),
+  title       TEXT NOT NULL,
   date        TEXT NOT NULL,
-  title       TEXT,
-  notes       TEXT,
-  created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+  status      TEXT NOT NULL DEFAULT 'live' CHECK (status IN ('live', 'finished')),
+  winner      TEXT,
+  data        TEXT NOT NULL DEFAULT '{}',
+  version     INTEGER NOT NULL DEFAULT 1,
+  created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-CREATE TABLE IF NOT EXISTS games (
-  id           INTEGER PRIMARY KEY,
-  session_id   INTEGER NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-  position     INTEGER NOT NULL DEFAULT 0,
-  a1           INTEGER NOT NULL REFERENCES players(id),
-  a2           INTEGER REFERENCES players(id),
-  b1           INTEGER NOT NULL REFERENCES players(id),
-  b2           INTEGER REFERENCES players(id),
-  winner       TEXT NOT NULL CHECK (winner IN ('A','B')),
-  score_text   TEXT
-);
-
-CREATE TABLE IF NOT EXISTS session_points (
-  session_id  INTEGER NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-  player_id   INTEGER NOT NULL REFERENCES players(id),
-  points      INTEGER NOT NULL,
-  PRIMARY KEY (session_id, player_id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_games_session  ON games(session_id, position);
-CREATE INDEX IF NOT EXISTS idx_points_player  ON session_points(player_id);
-CREATE INDEX IF NOT EXISTS idx_sessions_date  ON sessions(date DESC);
+CREATE INDEX IF NOT EXISTS idx_events_date ON events(date DESC, id DESC);

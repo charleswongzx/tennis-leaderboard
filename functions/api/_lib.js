@@ -6,26 +6,21 @@ export function ok(data, init) {
   return Response.json({ ok: true, data }, init);
 }
 
-/** Build an error JSON response: { ok: false, error } */
-export function err(message, status = 400) {
-  return Response.json({ ok: false, error: message }, { status });
+/** Build an error JSON response: { ok: false, error, data? } */
+export function err(message, status = 400, data) {
+  const body = { ok: false, error: message };
+  if (data !== undefined) body.data = data;
+  return Response.json(body, { status });
 }
 
-/**
- * Parse a route param (string) into a positive integer id.
- * Returns null if it is not a valid integer.
- */
+/** Parse a route param into a positive integer id, or null. */
 export function parseId(str) {
-  if (str === undefined || str === null || str === '') return null;
-  if (!/^-?\d+$/.test(String(str))) return null;
+  if (!/^\d+$/.test(String(str ?? ''))) return null;
   const n = Number(str);
-  if (!Number.isInteger(n)) return null;
-  return n;
+  return Number.isSafeInteger(n) && n > 0 ? n : null;
 }
 
-/**
- * Safely parse a JSON request body. Returns null on failure or empty body.
- */
+/** Safely parse a JSON request body. Returns null on failure or empty body. */
 export async function readJson(request) {
   try {
     const text = await request.text();
