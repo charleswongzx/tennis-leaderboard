@@ -417,6 +417,12 @@ window.Blitz = window.Blitz || { pages: {} };
 
   /* ---------- Blitzy the mascot ---------- */
 
+  // Blitzy always opens with these two, in this order; the tips below follow.
+  var OPENERS = [
+    'this place smells like 2026',
+    'on what planet does piglet tying knots look like a constricted pikachu'
+  ];
+
   var TIPS = [
     'did you know? hitting the ball harder makes it go faster.',
     'the strawberries are for after the match. put them down.',
@@ -446,7 +452,8 @@ window.Blitz = window.Blitz || { pages: {} };
     document.body.appendChild(bubble);
     document.body.appendChild(mascot);
 
-    var tipIdx = Math.floor(Math.random() * TIPS.length);
+    var lines = OPENERS.concat(TIPS.slice().sort(function () { return Math.random() - 0.5; }));
+    var tipIdx = 0;
     var hideTimer = null;
 
     function say(text) {
@@ -457,7 +464,7 @@ window.Blitz = window.Blitz || { pages: {} };
     }
 
     function nextTip() {
-      say(TIPS[tipIdx % TIPS.length]);
+      say(lines[tipIdx % lines.length]);
       tipIdx++;
     }
 
