@@ -23,6 +23,10 @@ function json(body, status) {
 }
 
 async function handleApi(request, env, url) {
+  if (!env.DB) {
+    // preview builds run without a database (see [previews] in wrangler.toml)
+    return json({ ok: false, error: 'this is a preview build with no database. Scores live on the production site' }, 503);
+  }
   const route = ROUTES.map((r) => ({ r, m: url.pathname.match(r.path) })).find((x) => x.m);
   if (!route) return json({ ok: false, error: 'no such endpoint' }, 404);
   const handler = route.r.mod[HANDLER[request.method]];
