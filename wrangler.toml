@@ -24,3 +24,9 @@ EDIT_PASSWORD = "Blitzy"
 [[d1_databases]]
 binding = "DB"
 database_name = "tennis-leaderboard"
+
+# Preview builds (non-production branches, run with `wrangler preview`).
+# Previews get no database on purpose, so testing a branch can never touch live
+# scores: pages load, and the API answers that data lives on the production site.
+[previews.vars]
+EDIT_PASSWORD = "Blitzy"
