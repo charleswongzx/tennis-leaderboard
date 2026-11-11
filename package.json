@@ -1,7 +1,7 @@
 {
   "name": "tennis-leaderboard",
   "private": true,
-  "description": "Rolax Weembledon Championships '95 (powered by Blitz Academy) - casual tennis scoreboards and tournaments on a Cloudflare Worker",
+  "description": "Rolax Weembledon Championships '94 (powered by Blitz Academy) - casual tennis scoreboards and tournaments on a Cloudflare Worker",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",

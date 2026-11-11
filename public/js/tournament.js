@@ -1,4 +1,4 @@
-/* Weembledon '95 - Tournaments.
+/* Weembledon '94 - Tournaments.
    /tournament?new=1  builder: names in, pick singles/doubles and a format, preview, start
    /tournament?id=N   viewer: order of play, standings, draw; umpires enter results */
 window.Blitz = window.Blitz || { pages: {} };
@@ -455,7 +455,7 @@ window.Blitz = window.Blitz || { pages: {} };
       var again = root.querySelector('[data-match="' + focusMatch + '"]');
       if (again) again.focus();
     }
-    document.title = ev.title + " · Weembledon '95";
+    document.title = ev.title + " · Weembledon '94";
 
     var msgs = [ev.title.toUpperCase() + ' · ' + formatMeta(d.format).label.toUpperCase(), prog.played + ' OF ' + prog.total + ' MATCHES PLAYED'];
     if (hasRR(d)) {

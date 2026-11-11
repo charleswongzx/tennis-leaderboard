@@ -1,4 +1,4 @@
-# Rolax Weembledon '95 - one Cloudflare Worker: static pages from /public plus the /api routes.
+# Rolax Weembledon '94 - one Cloudflare Worker: static pages from /public plus the /api routes.
 # Cloudflare Workers Builds (connected in the dashboard) runs `npx wrangler deploy` on every push.
 name = "tennis-leaderboard"
 main = "src/index.js"

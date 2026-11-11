@@ -1,4 +1,4 @@
-# Rolax Weembledon Championships '95 (powered by Blitz Academy)
+# Rolax Weembledon Championships '94 (powered by Blitz Academy)
 
 A Windows-95-themed tennis site for casual games between friends, built as one Cloudflare Worker (static pages + a small API) with a D1 database. Anyone with the link can watch live. Umpires log in with a shared password to keep score and start events.
 
