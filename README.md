@@ -48,6 +48,7 @@ node test/formats.test.mjs
 ## Local dev
 
 ```bash
+npm install
 npx wrangler dev           # http://localhost:8787  (umpire password: Blitzy)
 npx wrangler d1 execute tennis-leaderboard --local --file=seed.sql   # optional sample champion, after the first page load
 ```
@@ -61,4 +62,4 @@ The repo is connected to **Cloudflare Workers Builds** as the Worker `tennis-lea
 - Other branches get preview URLs on the PR's "Workers Builds" check.
 - The first deploy creates the D1 database on its own (Wrangler provisions bindings that have no `database_id`), and the Worker creates its table on first use.
 
-No GitHub secrets or manual database steps are needed. To use a custom domain, add it under the Worker's **Settings → Domains & Routes** in the Cloudflare dashboard.
+`package.json` pins Wrangler 4, which Workers Builds uses for the build. No GitHub secrets or manual database steps are needed. To use a custom domain, add it under the Worker's **Settings → Domains & Routes** in the Cloudflare dashboard.
