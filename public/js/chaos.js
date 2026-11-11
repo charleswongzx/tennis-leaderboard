@@ -42,7 +42,8 @@ window.Blitz = window.Blitz || { pages: {} };
     { src: '/audio/pokemon-trainer-battle.mp3', title: 'Pokémon Red/Blue/Yellow - Trainer Battle' },
     { src: '/audio/sf2-guile-theme.mp3', title: "Super Street Fighter II - Guile's Theme" },
     { src: '/audio/ff7-those-who-fight-further.mp3', title: 'Final Fantasy VII - Those Who Fight Further' },
-    { src: '/audio/undertale-megalovania.mp3', title: 'Undertale - Megalovania' }
+    { src: '/audio/undertale-megalovania.mp3', title: 'Undertale - Megalovania' },
+    { src: '/audio/honey-money-pooh-drill.mp3', title: 'Honey Money (Winnie the Pooh Drill Parody)' }
   ];
   var audio = null;
   var trackIdx = 0;
