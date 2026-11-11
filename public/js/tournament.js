@@ -243,7 +243,6 @@ window.Blitz = window.Blitz || { pages: {} };
     btn.disabled = true;
     try {
       var ev = await B.api('/events', { method: 'POST', body: { kind: 'tournament', title: title, date: date, data: NB.preview } });
-      B.bleep('tada');
       location.href = '/tournament?id=' + ev.id;
     } catch (e) {
       btn.disabled = false;
@@ -279,7 +278,7 @@ window.Blitz = window.Blitz || { pages: {} };
         refreshPreview();
         return;
       }
-      if (t.closest('#nb-shuffle')) { NB.seed = Math.floor(Math.random() * 1e9); refreshPreview(); B.bleep('ok'); return; }
+      if (t.closest('#nb-shuffle')) { NB.seed = Math.floor(Math.random() * 1e9); refreshPreview(); return; }
       if (t.closest('#nb-start')) { startTournament(); return; }
     });
     document.addEventListener('blitz:auth', function () { renderBuilder(root); refreshPreview(); });
@@ -533,7 +532,6 @@ window.Blitz = window.Blitz || { pages: {} };
       var before = F.champion(T.ev.data);
       saveT(root, function (data) { F.setScore(data, matchId, x, y); }, 'SCORE_ENTRY.EXE').then(function (saved) {
         if (!saved) return;
-        B.bleep(x === null ? 'down' : 'up');
         if (!before && F.champion(T.ev.data) && B.mascotSay) {
           B.mascotSay('we have a champion! umpire, press the big finish button and cue the polite applause.');
         }
@@ -553,7 +551,6 @@ window.Blitz = window.Blitz || { pages: {} };
       var w = F.champion(data);
       return { status: 'finished', winner: w ? sideText(data, w) : label };
     }, 'Finish')) {
-      B.bleep('tada');
       if (B.mascotSay) B.mascotSay('champion engraved. the trophy is imaginary but the glory is real.');
     }
   }
@@ -569,7 +566,7 @@ window.Blitz = window.Blitz || { pages: {} };
       if (t.closest('#tv-finish')) { finishT(root); return; }
       if (t.closest('#tv-playoffs')) {
         saveT(root, function (data) { F.startPlayoffs(data); }, 'Playoffs').then(function (ok) {
-          if (ok) { T.tab = 'draw'; renderViewer(root); B.bleep('tada'); }
+          if (ok) { T.tab = 'draw'; renderViewer(root); }
         });
         return;
       }
