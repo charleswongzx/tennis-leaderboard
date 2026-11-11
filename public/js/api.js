@@ -1,4 +1,4 @@
-/* Weembledon '95 - API client + umpire session. Plain script, no modules. */
+/* Weembledon '94 - API client + umpire session. Plain script, no modules. */
 window.Blitz = window.Blitz || { pages: {} };
 
 (function () {

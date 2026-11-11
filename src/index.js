@@ -1,4 +1,4 @@
-// Rolax Weembledon '95 - Cloudflare Worker entry.
+// Rolax Weembledon '94 - Cloudflare Worker entry.
 // Static pages in /public are served as Worker assets; requests under /api/* run here.
 import { isUmpire } from './api/_auth.js';
 import { ensureSchema } from './api/_schema.js';

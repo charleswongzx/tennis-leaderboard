@@ -1,5 +1,5 @@
 /* ============================================================
-   CHAOS.JS - shared Weembledon '95 behaviors.
+   CHAOS.JS - shared Weembledon '94 behaviors.
    Taskbar (with umpire login), header, ticker, dialogs, mascot,
    sparkles, theme music.
    ============================================================ */
@@ -33,17 +33,23 @@ window.Blitz = window.Blitz || { pages: {} };
     return DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
   }
 
-  /* ---------- theme music (off by default, remembered per device) ---------- */
+  /* ---------- battle music playlist (off by default, remembered per device) ---------- */
 
   var MUSIC_KEY = 'weembledon_music';
   var MUSIC_POS_KEY = 'weembledon_music_pos';
-  var MUSIC_SRC = '/audio/theme-8bit.mp3';
-  var MUSIC_TITLE = 'Who Wants To Be A Millionaire? - Questions 1 to 5 (8-bit)';
+  var PLAYLIST = [
+    { src: '/audio/theme-8bit.mp3', title: 'Who Wants To Be A Millionaire? - Questions 1 to 5 (8-bit)' },
+    { src: '/audio/pokemon-trainer-battle.mp3', title: 'Pokémon Red/Blue/Yellow - Trainer Battle' },
+    { src: '/audio/sf2-guile-theme.mp3', title: "Super Street Fighter II - Guile's Theme" },
+    { src: '/audio/ff7-those-who-fight-further.mp3', title: 'Final Fantasy VII - Those Who Fight Further' },
+    { src: '/audio/undertale-megalovania.mp3', title: 'Undertale - Megalovania' }
+  ];
   var audio = null;
+  var trackIdx = 0;
   var resumeArmed = false;
   var nowPlaying = null;
 
-  /* the little "now playing" ticker, bottom left */
+  /* the little "now playing" ticker, bottom left, with a skip button */
   function paintNowPlaying() {
     if (!document.body) return;
     if (!nowPlaying) {
@@ -51,7 +57,9 @@ window.Blitz = window.Blitz || { pages: {} };
         '<div class="now-playing" role="status" aria-live="polite" hidden>' +
           '<span class="np-eq" aria-hidden="true"><i></i><i></i><i></i></span>' +
           '<span class="np-window"><span class="np-text"></span></span>' +
+          '<button type="button" class="np-skip" title="Next track" aria-label="Next track">⏭</button>' +
         '</div>');
+      nowPlaying.querySelector('.np-skip').addEventListener('click', nextTrack);
       document.body.appendChild(nowPlaying);
     }
     var on = soundOn();
@@ -59,7 +67,7 @@ window.Blitz = window.Blitz || { pages: {} };
     nowPlaying.hidden = !on;
     nowPlaying.classList.toggle('paused', !playing);
     var text = playing
-      ? '♪ NOW PLAYING: ' + MUSIC_TITLE + ' ♪'
+      ? '♪ NOW PLAYING (' + (trackIdx + 1) + '/' + PLAYLIST.length + '): ' + PLAYLIST[trackIdx].title + ' ♪'
       : '♪ TAP ANYWHERE TO START THE MUSIC ♪';
     var t = nowPlaying.querySelector('.np-text');
     if (t.getAttribute('data-text') !== text) {
@@ -72,20 +80,39 @@ window.Blitz = window.Blitz || { pages: {} };
     try { return localStorage.getItem(MUSIC_KEY) === '1'; } catch (e) { return false; }
   }
 
+  function loadTrack(i, at) {
+    trackIdx = ((i % PLAYLIST.length) + PLAYLIST.length) % PLAYLIST.length;
+    audio.src = PLAYLIST[trackIdx].src;
+    if (at > 0) {
+      audio.addEventListener('loadedmetadata', function seek() {
+        audio.removeEventListener('loadedmetadata', seek);
+        try { audio.currentTime = at; } catch (e) {}
+      });
+    }
+  }
+
   function getAudio() {
     if (!audio) {
-      audio = new Audio(MUSIC_SRC);
-      audio.loop = true;
+      audio = new Audio();
+      audio.preload = 'none';
       audio.volume = 0.5;
       audio.addEventListener('playing', paintNowPlaying);
       audio.addEventListener('pause', paintNowPlaying);
-      // carry on from the same spot when moving between pages
-      try {
-        var pos = Number(sessionStorage.getItem(MUSIC_POS_KEY));
-        if (pos > 0) audio.currentTime = pos;
-      } catch (e) { /* no storage: start from the top */ }
+      audio.addEventListener('ended', function () { nextTrack(); });
+      // carry on with the same song, from the same spot, when moving between pages
+      var saved = { i: 0, t: 0 };
+      try { saved = JSON.parse(sessionStorage.getItem(MUSIC_POS_KEY)) || saved; } catch (e) {}
+      loadTrack(Number(saved.i) || 0, Number(saved.t) || 0);
     }
     return audio;
+  }
+
+  function nextTrack() {
+    var a = getAudio();
+    var wasOn = soundOn();
+    loadTrack(trackIdx + 1, 0);
+    if (wasOn) startMusic(); else paintNowPlaying();
+    return a;
   }
 
   // Browsers only allow sound after the visitor interacts with the page, so if
@@ -93,7 +120,8 @@ window.Blitz = window.Blitz || { pages: {} };
   function armResume() {
     if (resumeArmed) return;
     resumeArmed = true;
-    function go() {
+    function go(e) {
+      if (e && e.target && e.target.closest && e.target.closest('.np-skip')) return; // the skip button starts it itself
       document.removeEventListener('pointerdown', go, true);
       document.removeEventListener('keydown', go, true);
       resumeArmed = false;
@@ -115,7 +143,9 @@ window.Blitz = window.Blitz || { pages: {} };
   }
 
   window.addEventListener('pagehide', function () {
-    try { if (audio) sessionStorage.setItem(MUSIC_POS_KEY, String(audio.currentTime || 0)); } catch (e) {}
+    try {
+      if (audio) sessionStorage.setItem(MUSIC_POS_KEY, JSON.stringify({ i: trackIdx, t: audio.currentTime || 0 }));
+    } catch (e) {}
   });
 
   /* ---------- dialogs ---------- */
@@ -320,20 +350,20 @@ window.Blitz = window.Blitz || { pages: {} };
       '<header class="wordart-wrap">' +
         '<p class="crest" aria-hidden="true">🎾 🍓 🎾</p>' +
         '<div class="wordart-group">' +
-          '<h1 class="wordart"><span class="wa-small">ROLAX</span> WEEMBLEDON<br>CHAMPIONSHIPS \'95</h1>' +
+          '<h1 class="wordart"><span class="wa-small">ROLAX</span> WEEMBLEDON<br>CHAMPIONSHIPS \'94</h1>' +
           '<p class="wordart-sub">Powered by <b>Blitz Academy</b> · all-weather lawn simulator · <span class="blink">'
             + esc(opts.subtitle || 'quiet please') + '</span></p>' +
         '</div>' +
       '</header>');
     desktop.insertBefore(header, bar.nextSibling);
 
-    var ticker = el('<div class="ticker" aria-hidden="true"><div class="ticker-inner">*** WELCOME TO THE ROLAX WEEMBLEDON CHAMPIONSHIPS \'95 ... MOWING THE LAWN ... PLEASE WAIT ***</div></div>');
+    var ticker = el('<div class="ticker" aria-hidden="true"><div class="ticker-inner">*** WELCOME TO THE ROLAX WEEMBLEDON CHAMPIONSHIPS \'94 ... MOWING THE LAWN ... PLEASE WAIT ***</div></div>');
     desktop.insertBefore(ticker, header.nextSibling);
 
     var visitorNo = String(420 + (new Date().getDate() * 7) % 100).padStart(6, '0');
     desktop.appendChild(el(
       '<footer class="retro-footer">' +
-        '<span class="construction"><span>🍓 STRAWBERRIES &amp; CREAM SERVED SINCE 1995 🍓</span></span>' +
+        '<span class="construction"><span>🍓 STRAWBERRIES &amp; CREAM SERVED SINCE 1994 🍓</span></span>' +
         'You are spectator <span class="hit-counter">' + visitorNo + '</span> !!<br>' +
         'Best viewed in 800×600 in Netscape Navigator 3.0 · predominantly white attire required<br>' +
         '<small>Rolax Weembledon is a Blitz Academy production. Not affiliated with any real watch or real lawn. All rights reversed.</small>' +

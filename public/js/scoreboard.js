@@ -1,4 +1,4 @@
-/* Weembledon '95 - Quick scoreboard.
+/* Weembledon '94 - Quick scoreboard.
    Score entry keeps every player in the order they were added, so the + button
    you are tapping never moves. Standings are a separate tab you tabulate when
    you want them. */
@@ -101,7 +101,7 @@ window.Blitz = window.Blitz || { pages: {} };
     if (!S.ev) return;
     var ev = S.ev;
     var tab = S.tab || (B.isUmpire() && isLive() ? 'entry' : 'standings');
-    document.title = ev.title + " · Weembledon '95";
+    document.title = ev.title + " · Weembledon '94";
     document.getElementById('sb-title').textContent = '📟 ' + ev.title.toUpperCase();
 
     // banner

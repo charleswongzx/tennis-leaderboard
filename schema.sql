@@ -1,4 +1,4 @@
--- Rolax Weembledon Championships '95 (powered by Blitz Academy) - D1 schema (idempotent)
+-- Rolax Weembledon Championships '94 (powered by Blitz Academy) - D1 schema (idempotent)
 --
 -- One row per event. An event is either a quick scoreboard or a tournament.
 -- The event's players, scores and matches live in the `data` JSON column; the

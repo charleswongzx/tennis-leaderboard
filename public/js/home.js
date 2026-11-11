@@ -1,4 +1,4 @@
-/* Weembledon '95 - Centre Court (home): what's on now, the roll of champions, start something new */
+/* Weembledon '94 - Centre Court (home): what's on now, the roll of champions, start something new */
 window.Blitz = window.Blitz || { pages: {} };
 
 (function () {
@@ -63,7 +63,7 @@ window.Blitz = window.Blitz || { pages: {} };
         '<div class="spectator-only"><p style="margin-top:0">Spectators can watch everything. Umpires log in to keep score and start new events.</p>' +
           '<button type="button" id="home-login">🔒 Umpire login</button></div>');
 
-    var ticker = ['WELCOME TO THE ROLAX WEEMBLEDON CHAMPIONSHIPS \'95'];
+    var ticker = ['WELCOME TO THE ROLAX WEEMBLEDON CHAMPIONSHIPS \'94'];
     if (live.length) ticker.push('📺 NOW ON COURT: ' + live.map(function (e) { return e.title.toUpperCase(); }).join(' · '));
     if (done.length && done[0].winner) ticker.push('🏆 REIGNING CHAMPION: ' + done[0].winner.toUpperCase() + ' (' + done[0].title.toUpperCase() + ')');
     ticker.push('🍓 STRAWBERRIES AND CREAM AVAILABLE AT THE CONCESSION STAND (YOUR OWN FRIDGE)');
