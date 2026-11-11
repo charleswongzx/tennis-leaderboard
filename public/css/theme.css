@@ -74,6 +74,11 @@ body::before {
   color: transparent;
   -webkit-text-stroke: 1px rgba(40, 0, 60, 0.75);
   filter: drop-shadow(3px 3px 0 var(--wb-purple)) drop-shadow(1px 1px 0 #000);
+}
+
+/* title and tagline wobble together as one piece */
+.wordart-group {
+  display: inline-block;
   transform: rotate(-2deg);
   animation: wordart-wobble 3.2s ease-in-out infinite;
 }
@@ -592,5 +597,5 @@ textarea.names { min-height: 150px; resize: vertical; line-height: 1.4; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .wordart, .mascot, tr.rank-1, .ticker-inner, .blink, .led.bump, .np-eq i, .np-text { animation: none; }
+  .wordart-group, .mascot, tr.rank-1, .ticker-inner, .blink, .led.bump, .np-eq i, .np-text { animation: none; }
 }

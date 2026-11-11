@@ -319,9 +319,11 @@ window.Blitz = window.Blitz || { pages: {} };
     var header = el(
       '<header class="wordart-wrap">' +
         '<p class="crest" aria-hidden="true">🎾 🍓 🎾</p>' +
-        '<h1 class="wordart"><span class="wa-small">ROLAX</span> WEEMBLEDON<br>CHAMPIONSHIPS \'95</h1>' +
-        '<p class="wordart-sub">Powered by <b>Blitz Academy</b> · all-weather lawn simulator · <span class="blink">'
-          + esc(opts.subtitle || 'quiet please') + '</span></p>' +
+        '<div class="wordart-group">' +
+          '<h1 class="wordart"><span class="wa-small">ROLAX</span> WEEMBLEDON<br>CHAMPIONSHIPS \'95</h1>' +
+          '<p class="wordart-sub">Powered by <b>Blitz Academy</b> · all-weather lawn simulator · <span class="blink">'
+            + esc(opts.subtitle || 'quiet please') + '</span></p>' +
+        '</div>' +
       '</header>');
     desktop.insertBefore(header, bar.nextSibling);
 
