@@ -529,7 +529,7 @@ textarea.names { min-height: 150px; resize: vertical; line-height: 1.4; }
   display: flex;
   align-items: center;
   gap: 6px;
-  width: min(290px, calc(100vw - 120px)); /* leave room for Blitzy on the right */
+  width: min(360px, calc(100vw - 110px)); /* leave room for Blitzy on the right */
   padding: 3px 4px;
   background: var(--w95-face);
   box-shadow: var(--bevel-out), 3px 3px 0 rgba(0,0,0,0.3);
@@ -562,15 +562,16 @@ textarea.names { min-height: 150px; resize: vertical; line-height: 1.4; }
   font-family: "Courier New", monospace;
   font-weight: bold;
 }
-.np-skip {
-  flex-shrink: 0;
-  min-height: 22px;
-  min-width: 26px;
+.np-controls { display: flex; gap: 2px; flex-shrink: 0; }
+.np-btn {
+  min-height: 24px;
+  min-width: 28px;
   padding: 0 4px;
   font-size: 12px;
   line-height: 1;
 }
-.np-skip:active { padding-top: 1px; padding-bottom: 0; }
+.np-btn:active { padding-top: 1px; padding-bottom: 0; }
+.np-play { min-width: 32px; font-weight: bold; }
 .np-text { display: inline-block; padding-left: 100%; animation: ticker-scroll 14s linear infinite; }
 .now-playing.paused .np-text { animation-duration: 9s; }
 

@@ -49,31 +49,51 @@ window.Blitz = window.Blitz || { pages: {} };
   var resumeArmed = false;
   var nowPlaying = null;
 
-  /* the little "now playing" ticker, bottom left, with a skip button */
+  /* the music player, bottom left: previous / play-pause / next and a scrolling title */
   function paintNowPlaying() {
     if (!document.body) return;
     if (!nowPlaying) {
       nowPlaying = el(
-        '<div class="now-playing" role="status" aria-live="polite" hidden>' +
+        '<div class="now-playing" role="region" aria-label="Music player">' +
           '<span class="np-eq" aria-hidden="true"><i></i><i></i><i></i></span>' +
-          '<span class="np-window"><span class="np-text"></span></span>' +
-          '<button type="button" class="np-skip" title="Next track" aria-label="Next track">⏭</button>' +
+          '<span class="np-window" aria-live="polite"><span class="np-text"></span></span>' +
+          '<span class="np-controls">' +
+            '<button type="button" class="np-btn" data-np="prev" title="Previous track" aria-label="Previous track">⏮</button>' +
+            '<button type="button" class="np-btn np-play" data-np="play" title="Play" aria-label="Play">▶</button>' +
+            '<button type="button" class="np-btn" data-np="next" title="Next track" aria-label="Next track">⏭</button>' +
+          '</span>' +
         '</div>');
-      nowPlaying.querySelector('.np-skip').addEventListener('click', nextTrack);
+      nowPlaying.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-np]');
+        if (!b) return;
+        var what = b.getAttribute('data-np');
+        if (what === 'play') togglePlay();
+        else changeTrack(what === 'next' ? 1 : -1);
+      });
       document.body.appendChild(nowPlaying);
     }
     var on = soundOn();
     var playing = !!(audio && !audio.paused);
-    nowPlaying.hidden = !on;
+    var title = (trackIdx + 1) + '/' + PLAYLIST.length + ': ' + PLAYLIST[trackIdx].title;
     nowPlaying.classList.toggle('paused', !playing);
-    var text = playing
-      ? '♪ NOW PLAYING (' + (trackIdx + 1) + '/' + PLAYLIST.length + '): ' + PLAYLIST[trackIdx].title + ' ♪'
-      : '♪ TAP ANYWHERE TO START THE MUSIC ♪';
+    var playBtn = nowPlaying.querySelector('.np-play');
+    playBtn.textContent = on ? '⏸' : '▶';
+    playBtn.title = on ? 'Pause' : 'Play';
+    playBtn.setAttribute('aria-label', on ? 'Pause' : 'Play');
+    var text = playing ? '♪ NOW PLAYING ' + title + ' ♪'
+      : on ? '♪ TAP ANYWHERE TO RESUME · ' + title + ' ♪'
+      : '♪ PAUSED · ' + title + ' ♪';
     var t = nowPlaying.querySelector('.np-text');
     if (t.getAttribute('data-text') !== text) {
       t.setAttribute('data-text', text);
       t.textContent = text + '   ' + text + '   ';
     }
+  }
+
+  function togglePlay() {
+    var next = !soundOn();
+    try { localStorage.setItem(MUSIC_KEY, next ? '1' : '0'); } catch (e) {}
+    if (next) startMusic(); else stopMusic();
   }
 
   function soundOn() {
@@ -98,7 +118,7 @@ window.Blitz = window.Blitz || { pages: {} };
       audio.volume = 0.5;
       audio.addEventListener('playing', paintNowPlaying);
       audio.addEventListener('pause', paintNowPlaying);
-      audio.addEventListener('ended', function () { nextTrack(); });
+      audio.addEventListener('ended', function () { changeTrack(1); });
       // carry on with the same song, from the same spot, when moving between pages
       var saved = { i: 0, t: 0 };
       try { saved = JSON.parse(sessionStorage.getItem(MUSIC_POS_KEY)) || saved; } catch (e) {}
@@ -107,12 +127,10 @@ window.Blitz = window.Blitz || { pages: {} };
     return audio;
   }
 
-  function nextTrack() {
-    var a = getAudio();
-    var wasOn = soundOn();
-    loadTrack(trackIdx + 1, 0);
-    if (wasOn) startMusic(); else paintNowPlaying();
-    return a;
+  function changeTrack(step) {
+    getAudio();
+    loadTrack(trackIdx + step, 0);
+    if (soundOn()) startMusic(); else paintNowPlaying();
   }
 
   // Browsers only allow sound after the visitor interacts with the page, so if
@@ -121,7 +139,7 @@ window.Blitz = window.Blitz || { pages: {} };
     if (resumeArmed) return;
     resumeArmed = true;
     function go(e) {
-      if (e && e.target && e.target.closest && e.target.closest('.np-skip')) return; // the skip button starts it itself
+      if (e && e.target && e.target.closest && e.target.closest('.now-playing')) return; // the player's own buttons handle it
       document.removeEventListener('pointerdown', go, true);
       document.removeEventListener('keydown', go, true);
       resumeArmed = false;
@@ -317,22 +335,6 @@ window.Blitz = window.Blitz || { pages: {} };
     paintUmpire();
     bar.appendChild(umpBtn);
 
-    var soundBtn = el('<button class="w95-btn" type="button" aria-label="Toggle theme music"></button>');
-    function paintSound() {
-      var on = soundOn();
-      soundBtn.textContent = on ? '🔊' : '🔇';
-      soundBtn.title = on ? 'Mute the theme music' : 'Play the theme music';
-      soundBtn.setAttribute('aria-pressed', String(on));
-    }
-    soundBtn.addEventListener('click', function () {
-      var next = !soundOn();
-      try { localStorage.setItem(MUSIC_KEY, next ? '1' : '0'); } catch (e) {}
-      if (next) startMusic(); else stopMusic();
-      paintSound();
-    });
-    paintSound();
-    if (soundOn()) startMusic();
-    bar.appendChild(soundBtn);
 
     var clock = el('<span class="clock" title="Official timekeeper: Rolax">⌚ --:--</span>');
     function tick() {
@@ -388,6 +390,9 @@ window.Blitz = window.Blitz || { pages: {} };
 
     initSparkles();
     initMascot();
+    getAudio();
+    paintNowPlaying();
+    if (soundOn()) startMusic();
   }
 
   /* A Win95 window as an HTML string. */
