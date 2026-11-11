@@ -514,6 +514,52 @@ textarea.names { min-height: 150px; resize: vertical; line-height: 1.4; }
 .speech-bubble .bubble-title { font-weight: bold; display: block; margin-bottom: 3px; color: var(--wb-purple); }
 .speech-bubble.hidden { display: none; }
 
+/* ---------- Now playing ticker (bottom left) ---------- */
+
+.now-playing {
+  position: fixed;
+  left: calc(10px + env(safe-area-inset-left, 0px));
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  z-index: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: min(260px, calc(100vw - 120px)); /* leave room for Blitzy on the right */
+  padding: 3px 4px;
+  background: var(--w95-face);
+  box-shadow: var(--bevel-out), 3px 3px 0 rgba(0,0,0,0.3);
+  font-size: 12px;
+}
+.np-eq {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 14px;
+  padding: 2px 3px;
+  background: var(--board);
+  box-shadow: var(--bevel-field);
+  flex-shrink: 0;
+}
+.np-eq i { display: block; width: 3px; background: var(--board-text); animation: np-bounce 0.9s ease-in-out infinite; }
+.np-eq i:nth-child(2) { animation-delay: -0.3s; }
+.np-eq i:nth-child(3) { animation-delay: -0.6s; }
+@keyframes np-bounce { 0%, 100% { height: 3px; } 50% { height: 12px; } }
+.now-playing.paused .np-eq i { animation: none; height: 3px; }
+.np-window {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  background: var(--board);
+  color: var(--board-text);
+  box-shadow: var(--bevel-field);
+  padding: 2px 0;
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+}
+.np-text { display: inline-block; padding-left: 100%; animation: ticker-scroll 14s linear infinite; }
+.now-playing.paused .np-text { animation-duration: 9s; }
+
 /* ---------- Sparkle trail ---------- */
 
 .sparkle {
@@ -546,5 +592,5 @@ textarea.names { min-height: 150px; resize: vertical; line-height: 1.4; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .wordart, .mascot, tr.rank-1, .ticker-inner, .blink, .led.bump { animation: none; }
+  .wordart, .mascot, tr.rank-1, .ticker-inner, .blink, .led.bump, .np-eq i, .np-text { animation: none; }
 }

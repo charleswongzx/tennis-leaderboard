@@ -1,7 +1,7 @@
 /* ============================================================
    CHAOS.JS - shared Weembledon '95 behaviors.
    Taskbar (with umpire login), header, ticker, dialogs, mascot,
-   sparkles, bleeps.
+   sparkles, theme music.
    ============================================================ */
 window.Blitz = window.Blitz || { pages: {} };
 
@@ -33,39 +33,90 @@ window.Blitz = window.Blitz || { pages: {} };
     return DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
   }
 
-  /* ---------- bleep engine (WebAudio, muted by default) ---------- */
+  /* ---------- theme music (off by default, remembered per device) ---------- */
 
-  var SOUND_KEY = 'blitz95_sound';
-  var audioCtx = null;
+  var MUSIC_KEY = 'weembledon_music';
+  var MUSIC_POS_KEY = 'weembledon_music_pos';
+  var MUSIC_SRC = '/audio/theme-8bit.mp3';
+  var MUSIC_TITLE = 'Who Wants To Be A Millionaire? - Questions 1 to 5 (8-bit)';
+  var audio = null;
+  var resumeArmed = false;
+  var nowPlaying = null;
+
+  /* the little "now playing" ticker, bottom left */
+  function paintNowPlaying() {
+    if (!document.body) return;
+    if (!nowPlaying) {
+      nowPlaying = el(
+        '<div class="now-playing" role="status" aria-live="polite" hidden>' +
+          '<span class="np-eq" aria-hidden="true"><i></i><i></i><i></i></span>' +
+          '<span class="np-window"><span class="np-text"></span></span>' +
+        '</div>');
+      document.body.appendChild(nowPlaying);
+    }
+    var on = soundOn();
+    var playing = !!(audio && !audio.paused);
+    nowPlaying.hidden = !on;
+    nowPlaying.classList.toggle('paused', !playing);
+    var text = playing
+      ? '♪ NOW PLAYING: ' + MUSIC_TITLE + ' ♪'
+      : '♪ TAP ANYWHERE TO START THE MUSIC ♪';
+    var t = nowPlaying.querySelector('.np-text');
+    if (t.getAttribute('data-text') !== text) {
+      t.setAttribute('data-text', text);
+      t.textContent = text + '   ' + text + '   ';
+    }
+  }
 
   function soundOn() {
-    try { return localStorage.getItem(SOUND_KEY) === '1'; } catch (e) { return false; }
+    try { return localStorage.getItem(MUSIC_KEY) === '1'; } catch (e) { return false; }
   }
 
-  function bleep(kind) {
-    if (!soundOn()) return;
-    try {
-      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-      var o = audioCtx.createOscillator();
-      var g = audioCtx.createGain();
-      o.type = 'square';
-      var now = audioCtx.currentTime;
-      if (kind === 'error') {
-        o.frequency.setValueAtTime(311, now);
-        o.frequency.setValueAtTime(233, now + 0.09);
-      } else if (kind === 'tada') {
-        o.frequency.setValueAtTime(523, now);
-        o.frequency.setValueAtTime(784, now + 0.08);
-      } else {
-        o.frequency.setValueAtTime(660, now);
-      }
-      g.gain.setValueAtTime(0.04, now);
-      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
-      o.connect(g).connect(audioCtx.destination);
-      o.start(now);
-      o.stop(now + 0.18);
-    } catch (e) { /* the beeps were not meant to be */ }
+  function getAudio() {
+    if (!audio) {
+      audio = new Audio(MUSIC_SRC);
+      audio.loop = true;
+      audio.volume = 0.5;
+      audio.addEventListener('playing', paintNowPlaying);
+      audio.addEventListener('pause', paintNowPlaying);
+      // carry on from the same spot when moving between pages
+      try {
+        var pos = Number(sessionStorage.getItem(MUSIC_POS_KEY));
+        if (pos > 0) audio.currentTime = pos;
+      } catch (e) { /* no storage: start from the top */ }
+    }
+    return audio;
   }
+
+  // Browsers only allow sound after the visitor interacts with the page, so if
+  // music was left on, start it on the first tap or key press.
+  function armResume() {
+    if (resumeArmed) return;
+    resumeArmed = true;
+    function go() {
+      document.removeEventListener('pointerdown', go, true);
+      document.removeEventListener('keydown', go, true);
+      resumeArmed = false;
+      if (soundOn()) startMusic();
+    }
+    document.addEventListener('pointerdown', go, true);
+    document.addEventListener('keydown', go, true);
+  }
+
+  function startMusic() {
+    var played = getAudio().play();
+    if (played && played.catch) played.catch(armResume);
+    paintNowPlaying();
+  }
+
+  function stopMusic() {
+    if (audio) audio.pause();
+    paintNowPlaying();
+  }
+
+  window.addEventListener('pagehide', function () {
+    try { if (audio) sessionStorage.setItem(MUSIC_POS_KEY, String(audio.currentTime || 0)); } catch (e) {}
+  });
 
   /* ---------- dialogs ---------- */
 
@@ -103,7 +154,6 @@ window.Blitz = window.Blitz || { pages: {} };
       if (e.target === overlay || e.target.hasAttribute('data-dialog-close')) close();
     });
     document.body.appendChild(overlay);
-    bleep(opts.icon === '⚠️' || opts.icon === '❌' ? 'error' : 'ok');
     var first = btnRow.querySelector('button');
     if (first) first.focus();
     return { close: close };
@@ -168,12 +218,10 @@ window.Blitz = window.Blitz || { pages: {} };
       if (pw === null) return false;
       try {
         await B.login(pw);
-        bleep('tada');
         if (B.mascotSay) B.mascotSay('welcome to the umpire chair. please do not overrule the line judges for fun.');
         return true;
       } catch (e) {
         tries++;
-        bleep('error');
         if (e.status !== 401) {
           showDialog({ title: 'UMPIRE_LOGIN.EXE', icon: '❌', body: 'Could not log in: <b>' + esc(e.message) + '</b>' });
           return false;
@@ -239,13 +287,21 @@ window.Blitz = window.Blitz || { pages: {} };
     paintUmpire();
     bar.appendChild(umpBtn);
 
-    var soundBtn = el('<button class="w95-btn" type="button" title="toggle bleeps" aria-label="Toggle sound">' + (soundOn() ? '🔊' : '🔇') + '</button>');
+    var soundBtn = el('<button class="w95-btn" type="button" aria-label="Toggle theme music"></button>');
+    function paintSound() {
+      var on = soundOn();
+      soundBtn.textContent = on ? '🔊' : '🔇';
+      soundBtn.title = on ? 'Mute the theme music' : 'Play the theme music';
+      soundBtn.setAttribute('aria-pressed', String(on));
+    }
     soundBtn.addEventListener('click', function () {
       var next = !soundOn();
-      try { localStorage.setItem(SOUND_KEY, next ? '1' : '0'); } catch (e) {}
-      soundBtn.textContent = next ? '🔊' : '🔇';
-      if (next) bleep('tada');
+      try { localStorage.setItem(MUSIC_KEY, next ? '1' : '0'); } catch (e) {}
+      if (next) startMusic(); else stopMusic();
+      paintSound();
     });
+    paintSound();
+    if (soundOn()) startMusic();
     bar.appendChild(soundBtn);
 
     var clock = el('<span class="clock" title="Official timekeeper: Rolax">⌚ --:--</span>');
@@ -291,16 +347,11 @@ window.Blitz = window.Blitz || { pages: {} };
           title: 'System Error',
           icon: '❌',
           body: CLOSE_JOKES[Math.floor(Math.random() * CLOSE_JOKES.length)],
-          buttons: [{ label: 'OK' }, { label: 'OK, but louder', onClick: function () { bleep('error'); bleep('error'); } }]
+          buttons: [{ label: 'OK' }, { label: 'OK, but louder' }]
         });
       } else if (btn.dataset.action === 'min' && win) {
         win.classList.toggle('collapsed');
-        bleep('ok');
       }
-    });
-
-    document.addEventListener('click', function (e) {
-      if (e.target.closest('button, a')) bleep('ok');
     });
 
     initSparkles();
@@ -371,7 +422,6 @@ window.Blitz = window.Blitz || { pages: {} };
     function nextTip() {
       say(TIPS[tipIdx % TIPS.length]);
       tipIdx++;
-      bleep('ok');
     }
 
     mascot.addEventListener('click', nextTip);
@@ -418,5 +468,4 @@ window.Blitz = window.Blitz || { pages: {} };
   B.prompt95 = prompt95;
   B.loginDialog = loginDialog;
   B.win = win;
-  B.bleep = bleep;
 })();

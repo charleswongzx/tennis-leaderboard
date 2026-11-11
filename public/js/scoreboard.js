@@ -296,7 +296,6 @@ window.Blitz = window.Blitz || { pages: {} };
       input.value = '';
       S.emojiIdx = Math.floor(Math.random() * B.EMOJIS.length);
       showEmoji();
-      B.bleep('tada');
       if (B.mascotSay) B.mascotSay(name + ' has entered the lawn. may the odds be ever in their forehand.');
       input.focus();
     }
@@ -352,7 +351,6 @@ window.Blitz = window.Blitz || { pages: {} };
     if (await save(function () { return { status: 'finished', winner: label }; }, 'Finish')) {
       S.tab = 'standings';
       render();
-      B.bleep('tada');
       if (B.mascotSay) B.mascotSay('ladies and gentlemen, your champion. please clap politely, this is a lawn.');
     }
   }
@@ -370,7 +368,7 @@ window.Blitz = window.Blitz || { pages: {} };
       var tabBtn = t.closest('[data-tab]');
       if (tabBtn) { S.tab = tabBtn.getAttribute('data-tab'); render(); return; }
       if (t.closest('#tabulate')) {
-        S.tab = 'standings'; render(); B.bleep('tada');
+        S.tab = 'standings'; render();
         document.getElementById('sb-win').scrollIntoView({ behavior: 'smooth', block: 'start' });
         return;
       }
@@ -406,7 +404,6 @@ window.Blitz = window.Blitz || { pages: {} };
       var kind = act.getAttribute('data-act');
       if (kind === 'plus' || kind === 'minus') {
         S.pending[pid] = (S.pending[pid] || 0) + (kind === 'plus' ? 1 : -1);
-        B.bleep(kind === 'plus' ? 'up' : 'down');
         render();
         scheduleFlush();
       } else if (kind === 'set') {
