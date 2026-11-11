@@ -422,7 +422,7 @@ window.Blitz = window.Blitz || { pages: {} };
       B.checkUmpire();
       try {
         S.ev = await B.api('/events/' + encodeURIComponent(S.id));
-        if (S.ev.kind !== 'scoreboard') { location.replace('/tournament.html?id=' + S.ev.id); return; }
+        if (S.ev.kind !== 'scoreboard') { location.replace('/tournament?id=' + S.ev.id); return; }
         setSync('🟢 live');
         render();
       } catch (e) {

@@ -6,7 +6,7 @@ window.Blitz = window.Blitz || { pages: {} };
   var esc = B.esc;
   var S = { events: null, root: null, error: null };
 
-  function href(e) { return (e.kind === 'tournament' ? '/tournament.html' : '/scoreboard.html') + '?id=' + e.id; }
+  function href(e) { return (e.kind === 'tournament' ? '/tournament' : '/scoreboard') + '?id=' + e.id; }
   function chip(e) { return '<span class="kind-chip">' + (e.kind === 'tournament' ? '🏆 Tournament' : '📟 Scoreboard') + '</span>'; }
 
   function liveTable(list) {
@@ -89,7 +89,7 @@ window.Blitz = window.Blitz || { pages: {} };
     title = title.trim() || 'Quick scores';
     try {
       var ev = await B.api('/events', { method: 'POST', body: { kind: 'scoreboard', title: title, date: B.today(), data: { players: [], scores: {} } } });
-      location.href = '/scoreboard.html?id=' + ev.id;
+      location.href = '/scoreboard?id=' + ev.id;
     } catch (e) {
       if (e.status === 401) { if (await B.loginDialog()) newScoreboard(); return; }
       B.showDialog({ title: 'NEW_SCOREBOARD.EXE', icon: '❌', body: 'Could not create it: <b>' + esc(e.message) + '</b>' });
@@ -102,7 +102,7 @@ window.Blitz = window.Blitz || { pages: {} };
     B.buildChrome('home', { subtitle: 'quiet please' });
     S.root.addEventListener('click', function (e) {
       if (e.target.closest('#new-scoreboard')) return newScoreboard();
-      if (e.target.closest('#new-tournament')) { location.href = '/tournament.html?new=1'; return; }
+      if (e.target.closest('#new-tournament')) { location.href = '/tournament?new=1'; return; }
       if (e.target.closest('#home-login')) return B.loginDialog();
       if (e.target.closest('a')) return;
       var row = e.target.closest('[data-href]');

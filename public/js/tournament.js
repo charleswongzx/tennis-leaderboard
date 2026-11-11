@@ -1,6 +1,6 @@
 /* Weembledon '95 - Tournaments.
-   /tournament.html?new=1  builder: names in, pick singles/doubles and a format, preview, start
-   /tournament.html?id=N   viewer: order of play, standings, draw; umpires enter results */
+   /tournament?new=1  builder: names in, pick singles/doubles and a format, preview, start
+   /tournament?id=N   viewer: order of play, standings, draw; umpires enter results */
 window.Blitz = window.Blitz || { pages: {} };
 
 (function () {
@@ -244,7 +244,7 @@ window.Blitz = window.Blitz || { pages: {} };
     try {
       var ev = await B.api('/events', { method: 'POST', body: { kind: 'tournament', title: title, date: date, data: NB.preview } });
       B.bleep('tada');
-      location.href = '/tournament.html?id=' + ev.id;
+      location.href = '/tournament?id=' + ev.id;
     } catch (e) {
       btn.disabled = false;
       if (e.status === 401) { if (await B.loginDialog()) startTournament(); return; }
@@ -623,7 +623,7 @@ window.Blitz = window.Blitz || { pages: {} };
       B.checkUmpire();
       try {
         T.ev = await B.api('/events/' + encodeURIComponent(id));
-        if (T.ev.kind !== 'tournament') { location.replace('/scoreboard.html?id=' + T.ev.id); return; }
+        if (T.ev.kind !== 'tournament') { location.replace('/scoreboard?id=' + T.ev.id); return; }
         setSync('🟢 live');
         renderViewer(root);
       } catch (e) {

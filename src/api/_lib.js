@@ -1,5 +1,5 @@
 // Shared helpers for API route handlers.
-// Underscore-prefixed files are not routed by Cloudflare Pages Functions.
+// Underscore-prefixed files are helpers, not routes (see src/index.js).
 
 /** Build a successful JSON response: { ok: true, data } */
 export function ok(data, init) {

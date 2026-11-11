@@ -1,7 +1,7 @@
 // Umpire (editor) login: one shared password, exchanged for a signed cookie.
 //
 // The password comes from the EDIT_PASSWORD variable (wrangler.toml [vars] or a
-// Pages secret). The cookie holds "<expiry>.<HMAC(expiry)>", signed with
+// Worker secret). The cookie holds "<expiry>.<HMAC(expiry)>", signed with
 // SESSION_SECRET when set, otherwise with a key derived from the password, so
 // changing the password logs every device out.
 

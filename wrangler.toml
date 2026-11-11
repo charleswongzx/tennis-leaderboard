@@ -1,13 +1,26 @@
-name = "blitz-leaderboard"
+# Rolax Weembledon '95 - one Cloudflare Worker: static pages from /public plus the /api routes.
+# Cloudflare Workers Builds (connected in the dashboard) runs `npx wrangler deploy` on every push.
+name = "tennis-leaderboard"
+main = "src/index.js"
 compatibility_date = "2026-07-01"
-pages_build_output_dir = "public"
+
+[assets]
+directory = "public"
+binding = "ASSETS"
+run_worker_first = ["/api/*"]
+
+# Bundle schema.sql as text so the Worker can create its table on first use.
+[[rules]]
+type = "Text"
+globs = ["**/*.sql"]
+fallthrough = true
 
 # Umpire password for editing. Visitors can view everything without it.
 # Change it here and redeploy. Changing it logs every device out.
 [vars]
 EDIT_PASSWORD = "Blitzy"
 
+# No database_id needed: `wrangler deploy` creates the D1 database on the first deploy.
 [[d1_databases]]
 binding = "DB"
-database_name = "blitz-leaderboard"
-database_id = "REPLACE_WITH_DATABASE_ID"
+database_name = "tennis-leaderboard"
