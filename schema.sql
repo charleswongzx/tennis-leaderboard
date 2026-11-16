@@ -20,3 +20,10 @@ CREATE TABLE IF NOT EXISTS events (
 );
 
 CREATE INDEX IF NOT EXISTS idx_events_date ON events(date DESC, id DESC);
+
+-- One row per built-in historical result (src/api/_seeds.js) that has been added,
+-- so each is inserted exactly once and stays deleted if an umpire removes it.
+CREATE TABLE IF NOT EXISTS seeds (
+  key         TEXT PRIMARY KEY,
+  applied_at  TEXT NOT NULL DEFAULT (datetime('now'))
+);
